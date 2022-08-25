@@ -1,0 +1,1 @@
+# IntelliasGo_Internet_Supermarket
