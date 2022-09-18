@@ -9,3 +9,5 @@
 #4_create an HTML file and attach it to the project. Connect CSS file to the project
 
 #5_implement functionality for adding data to database through a form on the site
+
+#6_add a customer authorization form to the project 
