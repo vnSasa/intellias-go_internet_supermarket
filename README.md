@@ -11,3 +11,5 @@
 #5_implement functionality for adding data to database through a form on the site
 
 #6_add a customer authorization form to the project 
+
+#7_add hash-password check and a check to control the registration of the same users

@@ -6,7 +6,7 @@ import (
   _ "github.com/go-sql-driver/mysql"
   "net/http"
   "html/template"
-  "strings"
+  "golang.org/x/crypto/bcrypt"
 )
 
 var database *sql.DB
@@ -76,13 +76,14 @@ func login(w http.ResponseWriter, r *http.Request) {
     email := r.FormValue("email")
     password := r.FormValue("password")
     var pwd string
-    u := "SELECT password FROM users WHERE email = ?"
+    u := "SELECT confirm_password FROM users WHERE email = ?"
     row := database.QueryRow(u, email)
     err = row.Scan(&pwd)
     if err != nil {
       http.Redirect(w, r, "/login.html", http.StatusSeeOther)
     }
-    if strings.Compare(pwd, password) == 0 {
+    err = bcrypt.CompareHashAndPassword([]byte(pwd), []byte(password))
+    if err == nil {
       http.Redirect(w, r, "/main_page", http.StatusSeeOther)
     }
   }
@@ -109,10 +110,11 @@ func new_signup(w http.ResponseWriter, r *http.Request) {
     lastName := r.FormValue("last_name")
     password := r.FormValue("password")
     cPassword := r.FormValue("confirm_password")
+    cHash, _ := HashPassword(cPassword)
 
     _, err = database.Exec("INSERT INTO users (email, first_name, last_name, "+
                           "password, confirm_password) VALUES (?, ?, ?, ?, ?)",
-                          email, firstName, lastName, password, cPassword)
+                          email, firstName, lastName, password, cHash)
 
     if err != nil {
       panic(err)
@@ -120,6 +122,11 @@ func new_signup(w http.ResponseWriter, r *http.Request) {
 
     http.Redirect(w, r, "/", 301)
   }
+}
+
+func HashPassword(password string) (string, error) {
+  bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+  return string(bytes), err
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
