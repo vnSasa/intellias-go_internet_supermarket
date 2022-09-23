@@ -1,4 +1,4 @@
-{{ define "index" }}
+{{ define "signup" }}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -19,18 +19,20 @@
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
 
   <main class="px-3">
-    <h1>Main Page Supermarket</h1>
-    <p class="lead">Wellcome to the INTERNET SUPERMARKET</p>
+    <h1>Signup</h1>
 
-    <form action="/login" class="lead" method="post">
+    <form action="/new_signup" class="lead" method="post">
       <label>email</label><br>
       <input type="text" name="email" /><br><br>
+      <label>first_name</label><br>
+      <input type="text" name="first_name" /><br><br>
+      <label>last_name</label><br>
+      <input type="text" name="last_name" /><br><br>
       <label>password</label><br>
       <input type="text" name="password" /><br><br>
+      <label>confirm_password</label><br>
+      <input type="text" name="confirm_password" /><br><br>
       <input type="submit" value="Send">
-      <nav class="nav nav-masthead justify-content-center">
-        <a class="nav-link fw-bold py-1 px-0" href="/signup">signup</a>
-      </nav>
     </form>
   </main>
 
