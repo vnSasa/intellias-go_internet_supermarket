@@ -11,19 +11,6 @@ import (
 
 var database *sql.DB
 
-type SignupForm struct {
-  Email string `json : "email"`
-  FirstName string `json : "first_name"`
-  LastName string `json : "last_name"`
-  Password string `json : "password"`
-  CPassword string `json : "confirm_password"`
-}
-
-type LoginForm struct {
-  Email string `json : "email"`
-  Password string `json : "password"`
-}
-
 func main()  {
   handleFunc()
 }
@@ -66,27 +53,12 @@ func main_page(w http.ResponseWriter, r *http.Request) {
   t.ExecuteTemplate(w, "main_page", nil)
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
-  if r.Method == "POST" {
-    err := r.ParseForm()
-    if err != nil {
-      panic(err)
-    }
-
-    email := r.FormValue("email")
-    password := r.FormValue("password")
-    var pwd string
-    u := "SELECT confirm_password FROM users WHERE email = ?"
-    row := database.QueryRow(u, email)
-    err = row.Scan(&pwd)
-    if err != nil {
-      http.Redirect(w, r, "/login.html", http.StatusSeeOther)
-    }
-    err = bcrypt.CompareHashAndPassword([]byte(pwd), []byte(password))
-    if err == nil {
-      http.Redirect(w, r, "/main_page", http.StatusSeeOther)
-    }
-  }
+type SignupForm struct {
+  Email string `json:"email"`
+  FirstName string `json:"first_name"`
+  LastName string `json:"last_name"`
+  Password string `json:"password"`
+  CPassword string `json:"confirm_password"`
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
@@ -105,16 +77,19 @@ func new_signup(w http.ResponseWriter, r *http.Request) {
       panic(err)
     }
 
-    email := r.FormValue("email")
-    firstName := r.FormValue("first_name")
-    lastName := r.FormValue("last_name")
-    password := r.FormValue("password")
-    cPassword := r.FormValue("confirm_password")
-    cHash, _ := HashPassword(cPassword)
+    sData := SignupForm{
+      Email:  r.FormValue("email"),
+      FirstName:  r.FormValue("first_name"),
+      LastName: r.FormValue("last_name"),
+      Password: r.FormValue("password"),
+      CPassword:  r.FormValue("confirm_password"),
+    }
+
+    cHash, _ := HashPassword(sData.CPassword)
 
     _, err = database.Exec("INSERT INTO users (email, first_name, last_name, "+
                           "password, confirm_password) VALUES (?, ?, ?, ?, ?)",
-                          email, firstName, lastName, password, cHash)
+                          sData.Email, sData.FirstName, sData.LastName, sData.Password, cHash)
 
     if err != nil {
       panic(err)
@@ -127,6 +102,37 @@ func new_signup(w http.ResponseWriter, r *http.Request) {
 func HashPassword(password string) (string, error) {
   bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
   return string(bytes), err
+}
+
+type LoginForm struct {
+  Email string `json:"email"`
+  Password string `json:"password"`
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+  if r.Method == "POST" {
+    err := r.ParseForm()
+    if err != nil {
+      panic(err)
+    }
+
+    login := LoginForm{
+      Email:  r.FormValue("email"),
+      Password: r.FormValue("password"),
+    }
+
+    var pwd string
+    u := "SELECT confirm_password FROM users WHERE email = ?"
+    row := database.QueryRow(u, login.Email)
+    err = row.Scan(&pwd)
+    if err != nil {
+      http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+    }
+    err = bcrypt.CompareHashAndPassword([]byte(pwd), []byte(login.Password))
+    if err == nil {
+      http.Redirect(w, r, "/main_page", http.StatusSeeOther)
+    }
+  }
 }
 
 func create(w http.ResponseWriter, r *http.Request) {
